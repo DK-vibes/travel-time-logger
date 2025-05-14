@@ -49,4 +49,3 @@ function Table({ rows }: { rows: TravelRow[] }) {
     </table>
   );
 }
-}
