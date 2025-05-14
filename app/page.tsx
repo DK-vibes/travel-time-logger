@@ -4,15 +4,8 @@ import ChartSection from '@/components/ChartSection';
 export const dynamic = 'force-dynamic';
 
 interface ChartPoint {
-  t: string;
-  [date: string]: number | string;
-}
-
-export const dynamic = 'force-dynamic';
-
-interface ChartPoint {
-  t: string;
-  [date: string]: number | string;
+  t: string;              // HH:MM label
+  [date: string]: number | string; // one key per YYYY-MM-DD
 }
 
 function buildChartData(rows: TravelRow[]) {
@@ -23,13 +16,14 @@ function buildChartData(rows: TravelRow[]) {
     const local = new Date(
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
     );
-    const dateKey = local.toISOString().split('T')[0];
-    const timeLabel = local.toTimeString().slice(0, 5);
+    const dateKey = local.toISOString().split('T')[0]; // YYYY-MM-DD
+    const timeLabel = local.toTimeString().slice(0, 5); // HH:MM
     dateKeys.add(dateKey);
 
     if (!times[timeLabel]) times[timeLabel] = { t: timeLabel };
     times[timeLabel][dateKey] = r.duration_seconds / 60;
   }
+
   const chartData = Object.values(times).sort((a, b) => a.t.localeCompare(b.t));
   return { chartData, dateKeys: Array.from(dateKeys).sort() };
 }
