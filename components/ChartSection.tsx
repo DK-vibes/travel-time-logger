@@ -9,50 +9,62 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { hourTicks } from '@/lib/hourTicks';
+import type { TravelRow } from '@/lib/db';
 
-/** one object per time-of-day row in the chart */
-export interface ChartPoint {
-  t: string;                    // “HH:MM”
-  [date: string]: number | string; // dynamic keys for each YYYY-MM-DD
+/* Helper: flatten DB rows into { minute, dateKey, value } */
+function transform(rows: TravelRow[]) {
+  const byDate: Record<string, { minute: number; value: number }[]> = {};
+  rows.forEach((r) => {
+    const d = new Date(r.timestamp);
+    const pst = new Date(d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const minute = pst.getHours() * 60 + pst.getMinutes();
+    const dateKey = pst.toISOString().split('T')[0];
+    if (!byDate[dateKey]) byDate[dateKey] = [];
+    byDate[dateKey].push({ minute, value: r.duration_seconds / 60 });
+  });
+
+  // merge into recharts-friendly objects: { minute, 2025-05-14: 23.4, … }
+  const map: Record<number, any> = {};
+  Object.entries(byDate).forEach(([date, arr]) => {
+    arr.forEach(({ minute, value }) => {
+      if (!map[minute]) map[minute] = { minute };
+      map[minute][date] = value;
+    });
+  });
+  return { data: Object.values(map).sort((a, b) => a.minute - b.minute), dates: Object.keys(byDate) };
 }
 
-export default function ChartSection({
-  title,
-  chartData,
-  dateKeys,
-}: {
-  title: string;
-  chartData: ChartPoint[];
-  dateKeys: string[];
-}) {
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0–1440 step 60
+
+export default function ChartSection({ title, rows }: { title: string; rows: TravelRow[] }) {
+  const { data, dates } = transform(rows);
   return (
-    <section>
-      <h2 className="text-xl font-medium mb-3">{title}</h2>
+    <section className="space-y-2">
+      <h2 className="text-xl font-medium">{title}</h2>
       <div className="w-full h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-          >
+          <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="t"
+              dataKey="minute"
+              type="number"
+              domain={[0, 1439]}
               ticks={hourTicks}
-              interval={0}                 /* show every tick */
-              allowDuplicatedCategory
+              tickFormatter={(m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:00`}
             />
-            <YAxis domain={[0, 90]} tickCount={10} />
-            <Tooltip />
+            <YAxis domain={[0, 90]} />
+            <Tooltip
+              labelFormatter={(m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`}
+            />
             <Legend />
-            {dateKeys.map((date, idx) => (
+            {dates.map((date, idx) => (
               <Line
                 key={date}
-                type="monotone"
                 dataKey={date}
+                type="monotone"
+                dot={{ r: 3 }}
+                stroke={`hsl(${(idx * 55) % 360} 70% 50%)`}
                 strokeWidth={2}
-                dot={{ r: 3 }}             /* dots at each point */
-                stroke={`hsl(${(idx * 60) % 360} 70% 50%)`}
                 isAnimationActive={false}
               />
             ))}
