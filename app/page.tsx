@@ -12,20 +12,25 @@ function buildChartData(rows: TravelRow[]) {
   const times: Record<string, ChartPoint> = {};
   const dateKeys: Set<string> = new Set();
 
+  // ensure every hour label exists so X-axis spans full day
+  for (const t of hourTicks) {
+    times[t] = { t } as ChartPoint;
+  }
+
   for (const r of rows) {
     const local = new Date(
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
     );
-    const dateKey = local.toISOString().split('T')[0]; // YYYY-MM-DD
-    const timeLabel = local.toTimeString().slice(0, 5); // HH:MM
+    const dateKey = local.toISOString().split('T')[0];
+    const timeLabel = local.toTimeString().slice(0, 5);
     dateKeys.add(dateKey);
 
-    if (!times[timeLabel]) times[timeLabel] = { t: timeLabel };
     times[timeLabel][dateKey] = r.duration_seconds / 60;
   }
 
   const chartData = Object.values(times).sort((a, b) => a.t.localeCompare(b.t));
   return { chartData, dateKeys: Array.from(dateKeys).sort() };
+}
 }
 
 export default async function Page() {
