@@ -24,10 +24,10 @@ function transform(rows: TravelRow[]) {
   });
 
   // merge into recharts-friendly objects: { minute, 2025-05-14: 23.4, … }
-  const map: Record<number, any> = {};
+  const map: Record<number, ChartPoint> = {};
   Object.entries(byDate).forEach(([date, arr]) => {
     arr.forEach(({ minute, value }) => {
-      if (!map[minute]) map[minute] = { minute };
+      if (!map[minute]) map[minute] = { minute } as ChartPoint;
       map[minute][date] = value;
     });
   });
