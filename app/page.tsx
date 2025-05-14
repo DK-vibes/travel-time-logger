@@ -9,12 +9,12 @@ export default async function Page() {
       <h1 className="text-2xl font-semibold">Travel Time Log</h1>
 
       <section>
-        <h2 className="text-xl font-medium mb-2">Origin → Destination</h2>
+        <h2 className="text-xl font-medium mb-2">Home → Work</h2>
         <Table rows={outRows} />
       </section>
 
       <section>
-        <h2 className="text-xl font-medium mb-2">Destination → Origin</h2>
+        <h2 className="text-xl font-medium mb-2">Work → Home</h2>
         <Table rows={backRows} />
       </section>
     </main>

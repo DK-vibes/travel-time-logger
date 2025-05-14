@@ -1,0 +1,15 @@
+name: Ping Vercel cron
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes
+  workflow_dispatch:         # lets you run it manually
+
+jobs:
+  hit-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the Vercel endpoint
+        run: |
+          curl --silent --fail \
+            https://travel-time-logger.vercel.app/api/cron
