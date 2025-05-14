@@ -1,8 +1,12 @@
 import { getOut, getBack, TravelRow } from '@/lib/db';
-import nextDynamic from 'next/dynamic';
+import ChartSection from '@/components/ChartSection';
 
-// Dynamically import the client‑only chart component (no SSR)
-const ChartSection = nextDynamic(() => import('@/components/ChartSection'), { ssr: false });
+export const dynamic = 'force-dynamic';
+
+interface ChartPoint {
+  t: string;
+  [date: string]: number | string;
+}
 
 export const dynamic = 'force-dynamic';
 
