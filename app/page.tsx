@@ -7,10 +7,8 @@ function buildChartData(rows: TravelRow[]) {
   const times: Record<string, ChartPoint> = {};
   const dateKeys: Set<string> = new Set();
 
-  // ensure every hour label exists so X-axis spans full day
-  for (const t of hourTicks) {
-    times[t] = { t };
-  }
+  // seed every hour label so X‑axis spans 00:00 – 23:00
+  for (const t of hourTicks) times[t] = { t } as ChartPoint;
 
   for (const r of rows) {
     const local = new Date(
@@ -18,7 +16,7 @@ function buildChartData(rows: TravelRow[]) {
         timeZone: 'America/Los_Angeles',
       }),
     );
-    const dateKey   = local.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateKey   = local.toISOString().split('T')[0]; // YYYY‑MM‑DD
     const timeLabel = local.toTimeString().slice(0, 5);  // HH:MM
     dateKeys.add(dateKey);
 
@@ -38,7 +36,7 @@ export default async function Page() {
     <main className="p-6 max-w-5xl mx-auto space-y-12">
       <h1 className="text-2xl font-semibold">
         Travel Time by Time of Day&nbsp;
-        <span className="text-base font-normal">(Pacific)</span>
+        <span className="font-normal text-base">(Pacific)</span>
       </h1>
 
       <ChartSection title="Origin → Destination" {...out} />
