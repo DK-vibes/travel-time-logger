@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { insertTravelTime } from '@/lib/db';
 
 export const runtime = 'edge';
-export const config = { schedule: '*/10 * * * *' }; // every 10 min
+export const config = { schedule: '*/1 * * * *' }; // every 1 min
 
 export async function GET() {
   try {
