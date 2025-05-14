@@ -1,8 +1,8 @@
 import { getOut, getBack, TravelRow } from '@/lib/db';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
 // Dynamically import the client‑only chart component (no SSR)
-const ChartSection = dynamic(() => import('@/components/ChartSection'), { ssr: false });
+const ChartSection = nextDynamic(() => import('@/components/ChartSection'), { ssr: false });
 
 export const dynamic = 'force-dynamic';
 
