@@ -2,7 +2,7 @@ name: Ping Vercel cron
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # every 10 minutes
+    - cron: '*/1 * * * *'   # every 10 minutes
   workflow_dispatch:         # lets you run it manually
 
 jobs:
