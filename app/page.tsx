@@ -1,4 +1,5 @@
 import { getAllTravelTimes, TravelRow } from '@/lib/db';
+export const dynamic = 'force-dynamic';  // disable HTML caching
 export const revalidate = 60; // refresh once a minute
 
 export default async function Page() {
