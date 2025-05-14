@@ -13,8 +13,12 @@ import {
 export const dynamic = 'force-dynamic';
 
 // Convert DB rows → chart data object
+interface ChartPoint {
+  t: string; // 'HH:MM'
+  [date: string]: number | string; // dynamic keys for each YYYY-MM-DD line
+}
 function buildChartData(rows: TravelRow[]) {
-  const times: Record<string, Record<string, number>> = {}; // timeLabel → { date: minutes }
+  const times: Record<string, ChartPoint> = {}; // timeLabel → ChartPoint
   const dateKeys: Set<string> = new Set();
 
   for (const r of rows) {
@@ -25,12 +29,12 @@ function buildChartData(rows: TravelRow[]) {
     const timeLabel = local.toTimeString().slice(0, 5); // HH:MM
     dateKeys.add(dateKey);
 
-    if (!times[timeLabel]) times[timeLabel] = { t: timeLabel } as any;
-    (times[timeLabel] as any)[dateKey] = r.duration_seconds / 60;
+    if (!times[timeLabel]) times[timeLabel] = { t: timeLabel };
+    times[timeLabel][dateKey] = r.duration_seconds / 60;
   }
 
   // Sort by timeLabel ascending (00:00 → 23:59)
-  const chartData = Object.values(times).sort((a, b) => (a as any).t.localeCompare((b as any).t));
+  const chartData = Object.values(times).sort((a, b) => a.t.localeCompare(b.t));
 
   return { chartData, dateKeys: Array.from(dateKeys).sort() };
 }
@@ -55,7 +59,7 @@ function ChartSection({
   dateKeys,
 }: {
   title: string;
-  chartData: Record<string, any>[];
+  chartData: ChartPoint[];
   dateKeys: string[];
 }) {
   return (
