@@ -1,21 +1,26 @@
 'use client';
 import {
-  LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from 'recharts';
+import { hourTicks } from '@/lib/hourTicks';
 
+/** one object per time-of-day row in the chart */
 export interface ChartPoint {
-  t: string;                   // “HH:MM”
-  [date: string]: number | string; // dynamic date keys
+  t: string;                    // “HH:MM”
+  [date: string]: number | string; // dynamic keys for each YYYY-MM-DD
 }
 
-/** Hour labels 00:00 → 23:00 so X-axis always spans full day */
-export const hourTicks = Array.from({ length: 24 }, (_, h) =>
-  `${String(h).padStart(2, '0')}:00`
-);
-
 export default function ChartSection({
-  title, chartData, dateKeys,
+  title,
+  chartData,
+  dateKeys,
 }: {
   title: string;
   chartData: ChartPoint[];
@@ -26,12 +31,15 @@ export default function ChartSection({
       <h2 className="text-xl font-medium mb-3">{title}</h2>
       <div className="w-full h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="t"
               ticks={hourTicks}
-              interval={0}
+              interval={0}                 /* show every tick */
               allowDuplicatedCategory
             />
             <YAxis domain={[0, 90]} tickCount={10} />
@@ -43,7 +51,7 @@ export default function ChartSection({
                 type="monotone"
                 dataKey={date}
                 strokeWidth={2}
-                dot={{ r: 3 }}
+                dot={{ r: 3 }}             /* dots at each point */
                 stroke={`hsl(${(idx * 60) % 360} 70% 50%)`}
                 isAnimationActive={false}
               />

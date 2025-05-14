@@ -1,14 +1,17 @@
 import { getOut, getBack, TravelRow } from '@/lib/db';
-import ChartSection, { hourTicks, ChartPoint } from '@/components/ChartSection';
+import { hourTicks } from '@/lib/hourTicks';
+import ChartSection from '@/components/ChartSection';
+import type { ChartPoint } from '@/components/ChartSection';
 
 export const dynamic = 'force-dynamic';
 
+/* convert DB rows → array of ChartPoint for Recharts */
 function buildChartData(rows: TravelRow[]) {
   const times: Record<string, ChartPoint> = {};
   const dateKeys: Set<string> = new Set();
 
-  // seed every hour label so X‑axis spans 00:00 – 23:00
-  for (const t of hourTicks) times[t] = { t } as ChartPoint;
+  /* seed every hour label so the axis always spans the full day */
+  for (const t of hourTicks) times[t] = { t };
 
   for (const r of rows) {
     const local = new Date(
@@ -16,7 +19,7 @@ function buildChartData(rows: TravelRow[]) {
         timeZone: 'America/Los_Angeles',
       }),
     );
-    const dateKey   = local.toISOString().split('T')[0]; // YYYY‑MM‑DD
+    const dateKey   = local.toISOString().split('T')[0]; // YYYY-MM-DD
     const timeLabel = local.toTimeString().slice(0, 5);  // HH:MM
     dateKeys.add(dateKey);
 
