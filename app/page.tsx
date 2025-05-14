@@ -1,41 +1,32 @@
 import { getOut, getBack, TravelRow } from '@/lib/db';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the client‑only chart component (no SSR)
+const ChartSection = dynamic(() => import('@/components/ChartSection'), { ssr: false });
 
 export const dynamic = 'force-dynamic';
 
-// Convert DB rows → chart data object
 interface ChartPoint {
-  t: string; // 'HH:MM'
-  [date: string]: number | string; // dynamic keys for each YYYY-MM-DD line
+  t: string;
+  [date: string]: number | string;
 }
+
 function buildChartData(rows: TravelRow[]) {
-  const times: Record<string, ChartPoint> = {}; // timeLabel → ChartPoint
+  const times: Record<string, ChartPoint> = {};
   const dateKeys: Set<string> = new Set();
 
   for (const r of rows) {
     const local = new Date(
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
     );
-    const dateKey = local.toISOString().split('T')[0]; // YYYY-MM-DD
-    const timeLabel = local.toTimeString().slice(0, 5); // HH:MM
+    const dateKey = local.toISOString().split('T')[0];
+    const timeLabel = local.toTimeString().slice(0, 5);
     dateKeys.add(dateKey);
 
     if (!times[timeLabel]) times[timeLabel] = { t: timeLabel };
     times[timeLabel][dateKey] = r.duration_seconds / 60;
   }
-
-  // Sort by timeLabel ascending (00:00 → 23:59)
   const chartData = Object.values(times).sort((a, b) => a.t.localeCompare(b.t));
-
   return { chartData, dateKeys: Array.from(dateKeys).sort() };
 }
 
@@ -50,43 +41,5 @@ export default async function Page() {
       <ChartSection title="Origin → Destination" {...out} />
       <ChartSection title="Destination → Origin" {...back} />
     </main>
-  );
-}
-
-function ChartSection({
-  title,
-  chartData,
-  dateKeys,
-}: {
-  title: string;
-  chartData: ChartPoint[];
-  dateKeys: string[];
-}) {
-  return (
-    <section>
-      <h2 className="text-xl font-medium mb-3">{title}</h2>
-      <div className="w-full h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="t" interval={5} minTickGap={15} />
-            <YAxis domain={[0, 90]} tickCount={10} />
-            <Tooltip />
-            <Legend />
-            {dateKeys.map((date, idx) => (
-              <Line
-                key={date}
-                type="monotone"
-                dataKey={date}
-                strokeWidth={2}
-                dot={false}
-                stroke={`hsl(${(idx * 60) % 360} 70% 50%)`}
-                isAnimationActive={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </section>
   );
 }
