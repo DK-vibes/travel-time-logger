@@ -56,7 +56,7 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
               ticks={hourTicks}
               tickFormatter={(m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:00`}
             />
-            <YAxis domain={[0, 90]} />
+            <YAxis domain={[0, 90]} ticks={[0, 30, 60, 90]} />
             <Tooltip labelFormatter={(m) => {
               const h = String(Math.floor(Number(m) / 60)).padStart(2, '0');
               const mins = String(Number(m) % 60).padStart(2, '0');
