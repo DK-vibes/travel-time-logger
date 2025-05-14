@@ -1,4 +1,4 @@
-import { getAllTravelTimes } from '@/lib/db';
+import { getAllTravelTimes, TravelRow } from '@/lib/db';
 export const revalidate = 60; // refresh once a minute
 
 export default async function Page() {
@@ -15,7 +15,7 @@ export default async function Page() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r: any) => (
+          {rows.map((r: TravelRow) => (
             <tr key={r.id} className="odd:bg-gray-50 dark:odd:bg-gray-800">
               <td className="border p-2">{new Date(r.timestamp).toLocaleString()}</td>
               <td className="border p-2 text-right">{(r.duration_seconds / 60).toFixed(1)}</td>

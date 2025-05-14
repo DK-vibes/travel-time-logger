@@ -20,7 +20,7 @@ export async function GET() {
 
     await insertTravelTime(seconds, meters);
     return NextResponse.json({ ok: true, seconds, meters });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
     return NextResponse.json({ ok: false, error: `${err}` }, { status: 500 });
   }
