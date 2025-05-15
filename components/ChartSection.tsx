@@ -8,20 +8,18 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LegendProps,
 } from 'recharts';
 import { useState } from 'react';
 import type { TravelRow } from '@/lib/db';
 
 interface PointRow {
-  minute: number;           // x-axis value
-  [date: string]: number;   // dynamic keys for each YYYY-MM-DD
+  minute: number;
+  [date: string]: number;
 }
 
-const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0…1440
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0‑1440
 
 /* ---------- helpers ---------- */
-
 function toMinutes(d: Date) {
   return d.getHours() * 60 + d.getMinutes();
 }
@@ -34,22 +32,20 @@ function transform(rows: TravelRow[]) {
     const pst = new Date(
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
     );
-    const minute   = toMinutes(pst);
-    const dateKey  = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // YYYY-MM-DD
+    const minute  = toMinutes(pst);
+    const dateKey = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
     dates.add(dateKey);
-
     if (!map[minute]) map[minute] = { minute };
     map[minute][dateKey] = r.duration_seconds / 60;
   }
 
   return {
     data: Object.values(map).sort((a, b) => a.minute - b.minute),
-    dates: [...dates].sort(),            // oldest → newest
+    dates: [...dates].sort(), // oldest → newest
   };
 }
 
 /* ---------- component ---------- */
-
 export default function ChartSection({ title, rows }: { title: string; rows: TravelRow[] }) {
   const { data, dates } = transform(rows);
   const newest = dates[dates.length - 1];
@@ -62,27 +58,32 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
       return next;
     });
 
-  /* custom clickable legend */
-  const renderLegend = ({ payload }: LegendProps) =>
-    payload && (
+  // clickable legend renderer (typed as any to satisfy Recharts TS mismatch)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderLegend = (props: any) => {
+    const { payload } = props;
+    if (!payload) return null;
+    return (
       <ul className="flex flex-wrap gap-4 text-sm">
-        {payload.map(({ value, color }) => {
-          const active = !hidden.has(String(value));
+        {payload.map(({ value, color }: any) => {
+          const key = String(value);
+          const active = !hidden.has(key);
           return (
             <li
-              key={String(value)}
+              key={key}
               style={{ cursor: 'pointer', opacity: active ? 1 : 0.3 }}
-              onClick={() => toggle(String(value))}
+              onClick={() => toggle(key)}
             >
               <svg width={12} height={12} style={{ marginRight: 4 }}>
                 <rect width={12} height={12} fill={String(color)} />
               </svg>
-              {value as string}
+              {key}
             </li>
           );
         })}
       </ul>
     );
+  };
 
   return (
     <section className="space-y-2">
@@ -107,14 +108,12 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
               }}
               formatter={(v) => (typeof v === 'number' ? v.toFixed(1) : v)}
             />
-            <Legend content={renderLegend} />
+            {/* cast as any to avoid Recharts TS incompat */}
+            <Legend content={renderLegend as any} />
 
             {dates.map((date, idx) => {
               if (hidden.has(date)) return null;
-
-              const stroke =
-                date === newest ? '#2680ff' : `hsl(${(idx * 55) % 360} 70% 50%)`;
-
+              const stroke = date === newest ? '#2680ff' : `hsl(${(idx * 55) % 360} 70% 50%)`;
               return (
                 <Line
                   key={date}
