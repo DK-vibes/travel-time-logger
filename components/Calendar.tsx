@@ -42,7 +42,7 @@ export default function Calendar({
               {format(monthDate, 'MMMM yyyy')}
             </h3>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-sm bg-gray-100 p-1 rounded">
+            <div className="grid grid-cols-7 gap-1 text-center text-sm">
               {/* Weekday headers, always white */}
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
                 <span key={d} className="font-semibold text-xs text-white">
