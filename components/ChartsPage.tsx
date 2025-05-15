@@ -10,16 +10,17 @@ interface ChartsPageProps {
 }
 
 export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
-  // Determine which days have any data (Pacific time)
-  const allDays = getUniqueDays(outRows, backRows);
-
-  // State: which days are currently selected (start with none)
+  // Track which days are selected (in 'YYYY-MM-DD' PT format)
   const [activeDays, setActiveDays] = useState<Set<string>>(new Set());
 
   const toggleDay = (day: string): void => {
     setActiveDays((prev) => {
       const next = new Set(prev);
-      next.has(day) ? next.delete(day) : next.add(day);
+      if (next.has(day)) {
+        next.delete(day);
+      } else {
+        next.add(day);
+      }
       return next;
     });
   };
@@ -41,18 +42,4 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
       />
     </div>
   );
-}
-
-function getUniqueDays(a: TravelRow[], b: TravelRow[]): string[] {
-  const toKey = (t: string | Date): string =>
-    new Date(t).toLocaleDateString('en-CA', {
-      timeZone: 'America/Los_Angeles',
-    });
-
-  return Array.from(
-    new Set([
-      ...a.map((r) => toKey(r.timestamp)),
-      ...b.map((r) => toKey(r.timestamp)),
-    ]),
-  ).sort();
 }
