@@ -29,7 +29,7 @@ export function transform(rows: TravelRow[]): { data: PointRow[]; dates: string[
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
     );
     const minute = toMinutes(pst);
-    const dateKey = pst.toISOString().split('T')[0];
+    const dateKey = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // YYYY-MM-DD in PT
     dates.add(dateKey);
     if (!map[minute]) map[minute] = { minute };
     map[minute][dateKey] = r.duration_seconds / 60;
