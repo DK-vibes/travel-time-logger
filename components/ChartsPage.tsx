@@ -18,6 +18,11 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
   /* Build colour map once */
   const colorMap: Record<string, string> = {};
   allDates.forEach((date, idx) => {
+    colorMap[date] = idx === allDates.length - 1
+      ? '#2680ff'
+      : `hsl(${(idx * 55) % 360} 70% 50%)`;
+  });
+  allDates.forEach((date, idx) => {
     colorMap[date] = idx === allDates.length - 1 ? '#2680ff' : `hsl(${(idx * 55) % 360} 70% 50%)`;
   });
 
