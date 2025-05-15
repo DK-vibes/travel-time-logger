@@ -70,7 +70,7 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
             {dates.map((date, idx) => {
               const newestIndex = dates.length - 1;
               const steps = newestIndex - idx; // 0 for newest date
-              const opacity = steps < 9 ? 1 - steps * 0.1 : 0.1; // 1 → 0.1 over nine steps
+              const opacity = steps < 5 ? 1 - steps * 0.2 : 0.2; // 1.0,0.8,0.6,0.4,0.2
               return (
                 <Line
                   key={date}
