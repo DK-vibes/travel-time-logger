@@ -70,16 +70,17 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
             />
             <Legend />
             {dates.map((date, idx) => {
-              const steps = newestIndex - idx; // 0 for newest date
-              const factor = steps <= 4 ? 1 - steps * 0.2 : 0.2; // 1.0,0.8,0.6,0.4,0.2 and stay at 0.2
-              const shade = Math.round(255 * factor);
+              const steps = newestIndex - idx; // 0=newest
+              const factor = steps <= 4 ? 1 - steps * 0.2 : 0; // 1,0.8,0.6,0.4,0.2→0
+              const base = [65, 105, 225]; // royal blue RGB
+              const rgb = base.map((c) => Math.round(c * factor));
               return (
                 <Line
                   key={date}
                   dataKey={date}
                   type="monotone"
                   dot={{ r: 3 }}
-                  stroke={`rgb(${shade},${shade},${shade})`}
+                  stroke={`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`}
                   strokeWidth={2}
                   isAnimationActive={false}
                 />
