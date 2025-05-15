@@ -12,8 +12,8 @@ import {
 import type { TravelRow } from '@/lib/db';
 
 interface PointRow {
-  minute: number;      // minutes past midnight
-  [date: string]: number; // dynamic keys for each YYYY‑MM‑DD
+  minute: number;
+  [date: string]: number;
 }
 
 function toMinutes(date: Date) {
@@ -29,17 +29,17 @@ export function transform(rows: TravelRow[]): { data: PointRow[]; dates: string[
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
     );
     const minute = toMinutes(pst);
-    const dateKey = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // YYYY-MM-DD in PT
+    const dateKey = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
     dates.add(dateKey);
     if (!map[minute]) map[minute] = { minute };
     map[minute][dateKey] = r.duration_seconds / 60;
   });
 
-  const sortedDates = [...dates].sort(); // older → newer
+  const sortedDates = [...dates].sort();
   return { data: Object.values(map).sort((a, b) => a.minute - b.minute), dates: sortedDates };
 }
 
-const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0,60,…1440
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60);
 
 export default function ChartSection({ title, rows }: { title: string; rows: TravelRow[] }) {
   const { data, dates } = transform(rows);
@@ -67,17 +67,22 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
               formatter={(v: number) => (typeof v === 'number' ? v.toFixed(1) : v)}
             />
             <Legend />
-            {dates.map((date, idx) => (
-              <Line
-                key={date}
-                dataKey={date}
-                type="monotone"
-                dot={{ r: 3 }}
-                stroke={`hsl(${(idx * 55) % 360} 70% 50%)`}
-                strokeWidth={2}
-                isAnimationActive={false}
-              />
-            ))}
+            {dates.map((date, idx) => {
+              const newestIndex = dates.length - 1;
+              const steps = newestIndex - idx; // 0 for newest date
+              const opacity = steps < 9 ? 1 - steps * 0.1 : 0.1; // 1 → 0.1 over nine steps
+              return (
+                <Line
+                  key={date}
+                  dataKey={date}
+                  type="monotone"
+                  dot={{ r: 3 }}
+                  stroke={`rgba(255,255,255,${opacity.toFixed(2)})`}
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
