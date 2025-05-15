@@ -10,13 +10,16 @@ interface ChartsPageProps {
 }
 
 export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
-  // Collect every unique YYYY‑MM‑DD across both datasets (Pacific time)
+  // All unique YYYY-MM-DD values present in either dataset (Pacific Time)
   const uniqueDates = collectDates(outRows, backRows);
 
-  // User‑selected days (toggle on calendar)
-  const [activeDays, setActiveDays] = useState<Set<string>>(new Set(uniqueDates)); // pre‑select all days
-  const toggleDay = (d: string) =>
-    setActiveDays((prev) => {
+  // Calendar selection state (start with *all* dates selected)
+  const [activeDays, setActiveDays] = useState<Set<string>>(
+    new Set(uniqueDates),
+  );
+
+  const toggleDay = (d: string): void =>
+    setActiveDays(prev => {
       const next = new Set(prev);
       next.has(d) ? next.delete(d) : next.add(d);
       return next;
@@ -41,14 +44,14 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
   );
 }
 
-function collectDates(outRows: TravelRow[], backRows: TravelRow[]): string[] {
-  const fmt = (t: string | Date) =>
-    new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+/* helper — collect distinct dates in Pacific time */
+function collectDates(a: TravelRow[], b: TravelRow[]): string[] {
+  const toKey = (t: string | Date) =>
+    new Date(t).toLocaleDateString('en-CA', {
+      timeZone: 'America/Los_Angeles',
+    });
 
   return Array.from(
-    new Set([
-      ...outRows.map((r) => fmt(r.timestamp)),
-      ...backRows.map((r) => fmt(r.timestamp)),
-    ]),
+    new Set([...a, ...b].map(r => toKey(r.timestamp))),
   ).sort();
 }
