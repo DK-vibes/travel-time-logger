@@ -35,14 +35,16 @@ export function transform(rows: TravelRow[]): { data: PointRow[]; dates: string[
     map[minute][dateKey] = r.duration_seconds / 60;
   });
 
-  const sortedDates = [...dates].sort();
+  const sortedDates = [...dates].sort(); // oldest ➜ newest
   return { data: Object.values(map).sort((a, b) => a.minute - b.minute), dates: sortedDates };
 }
 
-const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60);
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0,60,…1440
 
 export default function ChartSection({ title, rows }: { title: string; rows: TravelRow[] }) {
   const { data, dates } = transform(rows);
+  const newestIndex = dates.length - 1;
+
   return (
     <section className="space-y-2">
       <h2 className="text-xl font-medium">{title}</h2>
@@ -68,16 +70,16 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
             />
             <Legend />
             {dates.map((date, idx) => {
-              const newestIndex = dates.length - 1;
               const steps = newestIndex - idx; // 0 for newest date
-              const opacity = steps < 5 ? 1 - steps * 0.2 : 0.2; // 1.0,0.8,0.6,0.4,0.2
+              const factor = steps <= 4 ? 1 - steps * 0.2 : 0.2; // 1.0,0.8,0.6,0.4,0.2 and stay at 0.2
+              const shade = Math.round(255 * factor);
               return (
                 <Line
                   key={date}
                   dataKey={date}
                   type="monotone"
                   dot={{ r: 3 }}
-                  stroke={`rgba(255,255,255,${opacity.toFixed(2)})`}
+                  stroke={`rgb(${shade},${shade},${shade})`}
                   strokeWidth={2}
                   isAnimationActive={false}
                 />
