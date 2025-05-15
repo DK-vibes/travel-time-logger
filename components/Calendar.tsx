@@ -1,6 +1,5 @@
 'use client';
 import { eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
-import { useState } from 'react';
 
 export interface CalendarProps {
   selected: Set<string>; // YYYY‑MM‑DD in PT
@@ -27,10 +26,16 @@ export default function Calendar({ selected, toggle }: CalendarProps) {
           <div key={offset}>
             <h3 className="font-medium mb-1">{format(monthDate, 'MMMM yyyy')}</h3>
             <div className="grid grid-cols-7 gap-1 text-center text-sm">
-              {['Su','Mo','Tu','We','Th','Fr','Sa'].map((d) => (
-                <span key={d} className="font-semibold text-xs">{d}</span>
+              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                <span key={d} className="font-semibold text-xs">
+                  {d}
+                </span>
               ))}
-              {Array(start.getDay()).fill(null).map((_, i) => <span key={`pad-${i}`} />)}
+              {Array(start.getDay())
+                .fill(null)
+                .map((_, i) => (
+                  <span key={`pad-${i}`} />
+                ))}
               {days.map((day) => {
                 const k = keyFor(day);
                 const active = selected.has(k);
