@@ -10,22 +10,22 @@ interface ChartsPageProps {
 }
 
 export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
-  // Gather all unique dates from both datasets
-  const outTrans = transform(outRows);
-  const backTrans = transform(backRows);
+  /* 1. Collect every distinct YYYY‑MM‑DD across both datasets */
+  const outMeta = transform(outRows);
+  const backMeta = transform(backRows);
   const allDates = Array.from(
-    new Set([...outTrans.dates, ...backTrans.dates])
+    new Set([...outMeta.dates, ...backMeta.dates])
   ).sort();
 
-  // Build a color map (bright blue for most recent, others colorful)
+  /* 2. Build a deterministic colour map */
   const colorMap: Record<string, string> = {};
   allDates.forEach((date, idx) => {
     colorMap[date] = idx === allDates.length - 1
-      ? '#2680ff'
+      ? '#2680ff' // newest = bright blue
       : `hsl(${(idx * 55) % 360} 70% 50%)`;
   });
 
-  // State for hidden dates and handler
+  /* 3. Track which dates are hidden (shared state) */
   const [hiddenDates, setHiddenDates] = useState<Set<string>>(new Set());
   const toggleDate = (date: string) =>
     setHiddenDates((prev) => {
@@ -35,13 +35,14 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
     });
 
   return (
-    <main>
+    <main className="p-6 max-w-5xl mx-auto space-y-8">
       <LegendSection
         dates={allDates}
         hiddenDates={hiddenDates}
         toggleDate={toggleDate}
         colorMap={colorMap}
       />
+
       <ChartSection
         title="Origin → Destination"
         rows={outRows}
