@@ -14,65 +14,68 @@ import { useState } from 'react';
 import type { TravelRow } from '@/lib/db';
 
 interface PointRow {
-  minute: number;
-  [date: string]: number;
+  minute: number;           // x-axis value
+  [date: string]: number;   // dynamic keys for each YYYY-MM-DD
 }
 
-function toMinutes(date: Date) {
-  return date.getHours() * 60 + date.getMinutes();
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0…1440
+
+/* ---------- helpers ---------- */
+
+function toMinutes(d: Date) {
+  return d.getHours() * 60 + d.getMinutes();
 }
 
-export function transform(rows: TravelRow[]): { data: PointRow[]; dates: string[] } {
+function transform(rows: TravelRow[]) {
   const map: Record<number, PointRow> = {};
-  const dates: Set<string> = new Set();
+  const dates = new Set<string>();
 
-  rows.forEach((r) => {
+  for (const r of rows) {
     const pst = new Date(
       new Date(r.timestamp).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
     );
-    const minute = toMinutes(pst);
-    const dateKey = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+    const minute   = toMinutes(pst);
+    const dateKey  = pst.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // YYYY-MM-DD
     dates.add(dateKey);
+
     if (!map[minute]) map[minute] = { minute };
     map[minute][dateKey] = r.duration_seconds / 60;
-  });
+  }
 
-  const sortedDates = [...dates].sort(); // oldest → newest
-  return { data: Object.values(map).sort((a, b) => a.minute - b.minute), dates: sortedDates };
+  return {
+    data: Object.values(map).sort((a, b) => a.minute - b.minute),
+    dates: [...dates].sort(),            // oldest → newest
+  };
 }
 
-const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60);
+/* ---------- component ---------- */
 
 export default function ChartSection({ title, rows }: { title: string; rows: TravelRow[] }) {
   const { data, dates } = transform(rows);
-  const newestIndex = dates.length - 1;
+  const newest = dates[dates.length - 1];
   const [hidden, setHidden] = useState<Set<string>>(new Set());
 
-  const toggle = (key: string) => {
+  const toggle = (d: string) =>
     setHidden((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      next.has(d) ? next.delete(d) : next.add(d);
       return next;
     });
-  };
 
-  /** custom legend renderer so items are clickable */
-  const renderLegend = (props: LegendProps) => {
-    const { payload } = props;
-    if (!payload) return null;
-    return (
-      <ul className="flex flex-wrap gap-4 pl-0 text-sm list-none">
-        {payload.map((entry) => {
-          const { value, color } = entry;
+  /* custom clickable legend */
+  const renderLegend = ({ payload }: LegendProps) =>
+    payload && (
+      <ul className="flex flex-wrap gap-4 text-sm">
+        {payload.map(({ value, color }) => {
           const active = !hidden.has(String(value));
           return (
             <li
-              key={value as string}
+              key={String(value)}
               style={{ cursor: 'pointer', opacity: active ? 1 : 0.3 }}
               onClick={() => toggle(String(value))}
             >
               <svg width={12} height={12} style={{ marginRight: 4 }}>
-                <rect width={12} height={12} fill={color as string} />
+                <rect width={12} height={12} fill={String(color)} />
               </svg>
               {value as string}
             </li>
@@ -80,13 +83,12 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
         })}
       </ul>
     );
-  };
 
   return (
     <section className="space-y-2">
       <h2 className="text-xl font-medium">{title}</h2>
       <div className="w-full h-80">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -94,7 +96,7 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
               type="number"
               domain={[0, 1439]}
               ticks={hourTicks}
-              tickFormatter={(m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:00`}
+              tickFormatter={(m) => `${String(Math.floor(Number(m) / 60)).padStart(2, '0')}:00`}
             />
             <YAxis domain={[0, 90]} ticks={[0, 30, 60, 90]} />
             <Tooltip
@@ -103,19 +105,23 @@ export default function ChartSection({ title, rows }: { title: string; rows: Tra
                 const mins = String(Number(m) % 60).padStart(2, '0');
                 return `${h}:${mins}`;
               }}
-              formatter={(v: number) => (typeof v === 'number' ? v.toFixed(1) : v)}
+              formatter={(v) => (typeof v === 'number' ? v.toFixed(1) : v)}
             />
             <Legend content={renderLegend} />
+
             {dates.map((date, idx) => {
               if (hidden.has(date)) return null;
-              const stroke = idx === newestIndex ? '#2680ff' : `hsl(${(idx * 55) % 360} 70% 50%)`;
+
+              const stroke =
+                date === newest ? '#2680ff' : `hsl(${(idx * 55) % 360} 70% 50%)`;
+
               return (
                 <Line
                   key={date}
                   dataKey={date}
                   type="monotone"
-                  dot={{ r: 3, stroke, fill: stroke }}
                   stroke={stroke}
+                  dot={{ r: 3, stroke, fill: stroke }}
                   strokeWidth={2}
                   isAnimationActive={false}
                 />
