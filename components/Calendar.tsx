@@ -4,13 +4,14 @@ import { eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths } from '
 export interface CalendarProps {
   selected: Set<string>; // YYYY‑MM‑DD in PT
   toggle: (day: string) => void;
+  colorMap: Record<string, string>;
 }
 
 function keyFor(date: Date) {
   return format(date, 'yyyy-MM-dd');
 }
 
-export default function Calendar({ selected, toggle }: CalendarProps) {
+export default function Calendar({ selected, toggle, colorMap }: CalendarProps) {
   const today = new Date();
   const months = [0, 1] as const; // current & previous month
 
@@ -27,7 +28,7 @@ export default function Calendar({ selected, toggle }: CalendarProps) {
             <h3 className="font-medium mb-1">{format(monthDate, 'MMMM yyyy')}</h3>
             <div className="grid grid-cols-7 gap-1 text-center text-sm">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                <span key={d} className="font-semibold text-xs">
+                <span key={d} className="font-semibold text-xs text-black">
                   {d}
                 </span>
               ))}
@@ -39,11 +40,13 @@ export default function Calendar({ selected, toggle }: CalendarProps) {
               {days.map((day) => {
                 const k = keyFor(day);
                 const active = selected.has(k);
+                const bg = active ? colorMap[k] : '#e5e7eb';
                 return (
                   <button
                     key={k}
                     onClick={() => toggle(k)}
-                    className={`w-8 h-8 rounded text-xs ${active ? 'bg-emerald-400 text-white' : 'bg-gray-200'}`}
+                    className="w-8 h-8 rounded text-xs text-black"
+                    style={{ backgroundColor: bg }}
                   >
                     {day.getDate()}
                   </button>
