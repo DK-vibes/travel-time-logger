@@ -4,13 +4,12 @@ import ChartSection, { transform } from './ChartSection';
 import LegendSection from './LegendSection';
 import type { TravelRow } from '@/lib/db';
 
-export default function ChartsPage({
-  outRows,
-  backRows,
-}: {
+interface ChartsPageProps {
   outRows: TravelRow[];
   backRows: TravelRow[];
-}) {
+}
+
+export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
   // Gather all unique dates from both datasets
   const outTrans = transform(outRows);
   const backTrans = transform(backRows);
