@@ -15,7 +15,7 @@ interface PointRow {
   [date: string]: number;
 }
 
-const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60); // 0–1440
+const hourTicks = Array.from({ length: 25 }, (_, h) => h * 60);
 
 function toMinutes(d: Date) {
   return d.getHours() * 60 + d.getMinutes();
@@ -70,7 +70,9 @@ export default function ChartSection({
               type="number"
               domain={[0, 1439]}
               ticks={hourTicks}
-              tickFormatter={(m) => `${String(Math.floor(Number(m) / 60)).padStart(2, '0')}:00`}
+              tickFormatter={(m) =>
+                `${String(Math.floor(Number(m) / 60)).padStart(2, '0')}:00`
+              }
             />
             <YAxis domain={[0, 90]} ticks={[0, 30, 60, 90]} />
             <Tooltip
