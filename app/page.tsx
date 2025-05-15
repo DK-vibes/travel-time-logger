@@ -1,15 +1,55 @@
+import ChartSection, { transform } from '@/components/ChartSection';
+import LegendSection from '@/components/LegendSection';
 import { getOut, getBack } from '@/lib/db';
-import ChartSection from '@/components/ChartSection';
-
-export const dynamic = 'force-dynamic';
+import { useState } from 'react';
 
 export default async function Page() {
   const [outRows, backRows] = await Promise.all([getOut(), getBack()]);
+
+  // Gather all unique dates from both datasets
+  const outTrans = transform(outRows);
+  const backTrans = transform(backRows);
+  const allDates = Array.from(
+    new Set([...outTrans.dates, ...backTrans.dates])
+  ).sort();
+
+  // Build a color map (bright blue for most recent, others colorful)
+  const colorMap: Record<string, string> = {};
+  allDates.forEach((date, idx) => {
+    colorMap[date] = idx === allDates.length - 1
+      ? '#2680ff'
+      : `hsl(${(idx * 55) % 360} 70% 50%)`;
+  });
+
+  // State for hidden dates and handler
+  const [hiddenDates, setHiddenDates] = useState<Set<string>>(new Set());
+  const toggleDate = (date: string) =>
+    setHiddenDates((prev) => {
+      const next = new Set(prev);
+      next.has(date) ? next.delete(date) : next.add(date);
+      return next;
+    });
+
   return (
-    <main className="p-6 max-w-5xl mx-auto space-y-12">
-      <h1 className="text-2xl font-semibold">Commute time vs. Departure time</h1>
-      <ChartSection title="Home → Work" rows={outRows} />
-      <ChartSection title="Work → Home" rows={backRows} />
+    <main>
+      <LegendSection
+        dates={allDates}
+        hiddenDates={hiddenDates}
+        toggleDate={toggleDate}
+        colorMap={colorMap}
+      />
+      <ChartSection
+        title="Origin → Destination"
+        rows={outRows}
+        hiddenDates={hiddenDates}
+        colorMap={colorMap}
+      />
+      <ChartSection
+        title="Destination → Origin"
+        rows={backRows}
+        hiddenDates={hiddenDates}
+        colorMap={colorMap}
+      />
     </main>
   );
 }
