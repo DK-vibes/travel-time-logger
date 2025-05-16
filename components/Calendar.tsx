@@ -38,19 +38,21 @@ export default function Calendar({
 
         return (
           <div key={offset}>
-            <h3 className="font-medium mb-1 text-black">
+            {/* Month & year header */}
+            <h3 className="font-medium mb-1 text-white">
               {format(monthDate, 'MMMM yyyy')}
             </h3>
 
+            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1 text-center text-sm">
-              {/* Weekday headers, always white */}
+              {/* Weekday labels */}
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
                 <span key={d} className="font-semibold text-xs text-white">
                   {d}
                 </span>
               ))}
 
-              {/* Blank slots before the 1st */}
+              {/* Blank slots before day 1 */}
               {Array(start.getDay())
                 .fill(null)
                 .map((_, i) => (
@@ -63,10 +65,10 @@ export default function Calendar({
                 const hasData = k in colorMap;
                 const isActive = selected.has(k);
 
-                // pick a background:
-                // - colored if selected
-                // - white if available but not selected
-                // - gray if no data at all
+                // background choice:
+                // • colored if selected
+                // • white if hasData but not selected
+                // • gray if no data
                 const bg = hasData
                   ? isActive
                     ? colorMap[k]
