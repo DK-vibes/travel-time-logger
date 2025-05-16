@@ -10,7 +10,7 @@ interface ChartsPageProps {
 }
 
 export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
-  // Gather unique days from both datasets
+  // Gather unique days (YYYY-MM-DD PT) from both datasets
   const uniqueDays = Array.from(
     new Set([
       ...outRows.map((r) =>
@@ -22,14 +22,14 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
     ]),
   ).sort();
 
-  // Build a color map: distinct HSL colors per day
+  // Build a distinct HSL color for each day
   const colorMap: Record<string, string> = {};
   uniqueDays.forEach((day, idx) => {
     const hue = (idx * 360) / uniqueDays.length;
     colorMap[day] = `hsl(${hue} 70% 50%)`;
   });
 
-  // State of selected days
+  // Track which days are selected
   const [activeDays, setActiveDays] = useState<Set<string>>(new Set());
 
   const toggleDay = (day: string): void => {
@@ -45,7 +45,7 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
   };
 
   return (
-    <div className="space-y-10 p-6 max-w-6xl mx-auto">
+    <div className="space-ay-10 p-6 max-w-6xl mx-auto">
       <Calendar selected={activeDays} toggle={toggleDay} colorMap={colorMap} />
 
       <ChartSection
