@@ -52,7 +52,7 @@ export default function Calendar({
                 </span>
               ))}
 
-              {/* Blank slots before day 1 */}
+              {/* Blank slots before the 1st */}
               {Array(start.getDay())
                 .fill(null)
                 .map((_, i) => (
@@ -68,19 +68,19 @@ export default function Calendar({
                 // background choice:
                 // • colored if selected
                 // • white if hasData but not selected
-                // • gray if no data
-                const bg = hasData
+                // • dark gray if no data
+                const bgColor = hasData
                   ? isActive
                     ? colorMap[k]
                     : '#ffffff'
-                  : '#e5e7eb';
+                  : '#4B5563'; // darker gray
 
                 return (
                   <button
                     key={k}
                     onClick={() => hasData && toggle(k)}
                     className="w-8 h-8 rounded text-xs font-medium text-black"
-                    style={{ backgroundColor: bg }}
+                    style={{ backgroundColor: bgColor }}
                   >
                     {day.getDate()}
                   </button>
