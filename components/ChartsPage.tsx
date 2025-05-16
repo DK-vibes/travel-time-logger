@@ -10,30 +10,29 @@ interface ChartsPageProps {
 }
 
 export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
-  // Gather unique days (YYYY-MM-DD PT) from both datasets
+  // Compute unique dates in Pacific time
   const uniqueDays = Array.from(
     new Set([
-      ...outRows.map((r) =>
+      ...outRows.map(r =>
         new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
       ),
-      ...backRows.map((r) =>
+      ...backRows.map(r =>
         new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
       ),
     ]),
   ).sort();
 
-  // Build a distinct HSL color for each day
+  // Build color map for each available day
   const colorMap: Record<string, string> = {};
   uniqueDays.forEach((day, idx) => {
     const hue = (idx * 360) / uniqueDays.length;
     colorMap[day] = `hsl(${hue} 70% 50%)`;
   });
 
-  // Track which days are selected
+  // Track selected days
   const [activeDays, setActiveDays] = useState<Set<string>>(new Set());
-
-  const toggleDay = (day: string): void => {
-    setActiveDays((prev) => {
+  const toggleDay = (day: string) => {
+    setActiveDays(prev => {
       const next = new Set(prev);
       if (next.has(day)) {
         next.delete(day);
@@ -45,15 +44,19 @@ export default function ChartsPage({ outRows, backRows }: ChartsPageProps) {
   };
 
   return (
-    <div className="space-ay-10 p-6 max-w-6xl mx-auto">
+    <div className="space-y-10 p-6 max-w-6xl mx-auto">
+      {/* Calendar with day colors and toggles */}
       <Calendar selected={activeDays} toggle={toggleDay} colorMap={colorMap} />
 
+      {/* Chart for outbound travel */}
       <ChartSection
         title="Origin → Destination"
         rows={outRows}
         activeDays={activeDays}
         colorMap={colorMap}
       />
+
+      {/* Chart for return travel */}
       <ChartSection
         title="Destination → Origin"
         rows={backRows}
